@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -53,15 +53,15 @@ export function Dashboard() {
     collection: DataListProps[],
     type: 'positive' | 'negative'
   ) {
-    const transactionsByType = collection
+    const collectionFilttered = collection
     .filter(transaction => transaction.type === type);
 
-    if (transactionsByType.length === 0) {
-      return '';
+    if (collectionFilttered.length === 0) {
+      return 0;
     }
 
     const lastTransaction =
-    Math.max.apply(Math, transactionsByType
+    Math.max.apply(Math, collectionFilttered
       .map(transaction => new Date(transaction.date).getTime()));
 
     return Intl.DateTimeFormat('pt-BR', {
@@ -71,7 +71,7 @@ export function Dashboard() {
   }
 
   async function loadTransactions() {
-    const dataKey = '@gofinances:transactions';
+    const dataKey = `@gofinances:transactions_user:${user.id}`;
     const response = await AsyncStorage.getItem(dataKey);
     const transactions = response ? JSON.parse(response) : [];
 
@@ -112,7 +112,9 @@ export function Dashboard() {
 
     const lastTransactionEntries = getLastTransactionDate(transactions, 'positive');
     const lastTransactionExpensives = getLastTransactionDate(transactions, 'negative');
-    const totalInterval = `01 a ${lastTransactionExpensives}`;
+    const totalInterval = lastTransactionExpensives
+      ? `01 a ${lastTransactionExpensives}`
+      : lastTransactionEntries ? `01 a ${lastTransactionEntries}` : 'Não há transações';
 
     const total = entriesTotal - expensiveTotal;
     setHighlightData({
@@ -121,14 +123,16 @@ export function Dashboard() {
           style: 'currency',
           currency: 'BRL'
         }),
-        lastTransaction: lastTransactionEntries,
+        lastTransaction: lastTransactionEntries === 0 ? 'Não há transações'
+        : `Última entrada dia ${lastTransactionEntries}`,
       },
       expensives: {
         amount: expensiveTotal.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL'
         }),
-        lastTransaction: lastTransactionExpensives,
+        lastTransaction: lastTransactionExpensives === 0 ? 'Não há transações'
+        : `Última saída dia ${lastTransactionExpensives}`,
       },
       total: {
         amount: total.toLocaleString('pt-BR', {
@@ -181,13 +185,13 @@ export function Dashboard() {
               type='up'
               title='Entradas'
               amount={highlightData.entries.amount}
-              lastTransaction={`Última entrada dia ${highlightData.entries.lastTransaction}`}
+              lastTransaction={highlightData.entries.lastTransaction}
             />
             <HighlightCard
               type='down'
               title='Saídas'
               amount={highlightData.expensives.amount}
-              lastTransaction={`Última saída dia ${highlightData.expensives.lastTransaction}`}
+              lastTransaction={highlightData.expensives.lastTransaction}
             />
             <HighlightCard
               type='total'
