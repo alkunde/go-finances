@@ -4,9 +4,10 @@ import 'intl/locale-data/jsonp/pt-BR';
 import React from 'react';
 import { StatusBar } from 'react-native';
 import AppLoading from 'expo-app-loading';
-import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider } from 'styled-components';
+
+import { Routes } from './src/routes';
 
 import {
   useFonts,
@@ -17,9 +18,7 @@ import {
 
 import theme from './src/global/styles/theme';
 
-import { AppRoutes } from './src/routes/app.routes';
-
-import { SignIn } from './src/screens/SignIn';
+import { AuthProvider, useAuth } from './src/hooks/auth';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -28,20 +27,22 @@ export default function App() {
     Poppins_700Bold,
   });
 
-  if (!fontsLoaded) {
+  const { userStorageLoading } = useAuth();
+
+  if (!fontsLoaded || userStorageLoading) {
     return <AppLoading />
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider theme={theme}>
-        <NavigationContainer>
-          <StatusBar
-            backgroundColor={theme.colors.primary}
-            barStyle='light-content'
-          />
-          <SignIn />
-        </NavigationContainer>
+        <StatusBar
+          backgroundColor={theme.colors.primary}
+          barStyle='light-content'
+        />
+        <AuthProvider>
+          <Routes />
+        </AuthProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   )
