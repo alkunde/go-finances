@@ -13,7 +13,7 @@ const Providers: React.FC = ({ children }) => (
 
 describe('Input component', () => {
   it('must have specific border color when active', () => {
-    const { getByTestId, debug } = render(
+    const { getByTestId } = render(
       <Input
         testID='input-email'
         placeholder='Email'
@@ -25,8 +25,6 @@ describe('Input component', () => {
         wrapper: Providers
       }
     );
-
-    debug();
 
     const inputComponent = getByTestId('input-email');
 
