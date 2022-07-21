@@ -58,5 +58,11 @@ allprojects {
             }
         }
         maven { url 'https://www.jitpack.io' }
+
+        //Detox
+        maven {
+            // Artefatos do Detox para o node_modules
+            url "$rootDir/../node_modules/detox/Detox-android"
+        }
     }
 }
